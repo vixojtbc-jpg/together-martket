@@ -71,6 +71,37 @@ async function findExpiredOpenIds(limit = 100) {
   return rows.map((row) => row.id);
 }
 
+// 관리자: 공구 목록 (상태 필터 선택)
+async function findAllForAdmin(status = null, limit = 200) {
+  const where = status ? 'WHERE gb.status = ?' : '';
+  const params = status ? [status, limit] : [limit];
+  const [rows] = await db.query(
+    `SELECT gb.id, gb.title, gb.sale_price, gb.target_quantity, gb.current_quantity,
+            gb.deadline_at, gb.status, gb.created_at, u.nickname AS host_nickname
+       FROM group_buys gb
+       JOIN users u ON u.id = gb.host_id
+       ${where}
+      ORDER BY gb.created_at DESC, gb.id DESC
+      LIMIT ?`,
+    params,
+  );
+  return rows;
+}
+
+async function countByStatus() {
+  const [rows] = await db.query('SELECT status, COUNT(*) AS count FROM group_buys GROUP BY status');
+  return rows;
+}
+
+// 진행 중(마감 전) 공구가 있는 공구장인지
+async function hasOpenByHost(hostId) {
+  const [rows] = await db.query(
+    'SELECT 1 FROM group_buys WHERE host_id = ? AND status IN (?) AND deadline_at > UTC_TIMESTAMP() LIMIT 1',
+    [hostId, OPEN_STATUSES],
+  );
+  return rows.length > 0;
+}
+
 async function findById(id) {
   const [rows] = await db.query('SELECT * FROM group_buys WHERE id = ?', [id]);
   return rows[0] || null;
@@ -128,6 +159,9 @@ module.exports = {
   findDetailById,
   findByHost,
   findExpiredOpenIds,
+  findAllForAdmin,
+  countByStatus,
+  hasOpenByHost,
   findById,
   findByIdForUpdate,
   create,

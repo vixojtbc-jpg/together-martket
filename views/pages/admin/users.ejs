@@ -1,0 +1,42 @@
+<h1 class="admin__title">관리자</h1>
+<%- include('../../partials/adminNav', { tab }) %>
+
+<section class="section">
+  <h2 class="section__title">회원 관리 <span class="section__count"><%= users.length %></span></h2>
+  <p class="field__help">최근 가입한 200명까지 보여요. 진행 중인 공구가 있는 공구장은 역할을 바꿀 수 없어요.</p>
+
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>ID</th><th>닉네임 / 이메일</th><th>가입일</th><th>연 공구</th><th>참여 중</th><th>역할</th></tr>
+      </thead>
+      <tbody>
+        <% users.forEach((u) => { %>
+          <tr>
+            <td><%= u.id %></td>
+            <td><strong><%= u.nickname %></strong><br><span class="table__sub"><%= u.email %></span></td>
+            <td class="table__nowrap"><%= u.createdAtText %></td>
+            <td><%= u.hostedCount %></td>
+            <td><%= u.joinedCount %></td>
+            <td>
+              <% if (currentUser.id === u.id) { %>
+                <span class="tag"><%= u.roleText %> (나)</span>
+              <% } else { %>
+                <form method="POST" action="/admin/users/<%= u.id %>/role" class="inline-form"
+                      data-confirm="<%= u.nickname %>님의 역할을 바꿀까요?">
+                  <label class="sr-only" for="role-<%= u.id %>">역할</label>
+                  <select name="role" id="role-<%= u.id %>" class="field__input field__input--sm">
+                    <% Object.entries(roles).forEach(([value, label]) => { %>
+                      <option value="<%= value %>" <%= u.role === value ? 'selected' : '' %>><%= label %></option>
+                    <% }) %>
+                  </select>
+                  <button type="submit" class="btn btn--ghost btn--sm">변경</button>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>

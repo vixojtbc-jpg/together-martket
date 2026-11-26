@@ -1,0 +1,35 @@
+<h1 class="admin__title">관리자</h1>
+<%- include('../../partials/adminNav', { tab }) %>
+
+<section class="section">
+  <h2 class="section__title">회원 <span class="section__count"><%= userTotal %></span></h2>
+  <div class="stats">
+    <% roles.forEach((r) => { %>
+      <div class="stat"><p class="stat__label"><%= r.label %></p><p class="stat__value"><%= r.count %>명</p></div>
+    <% }) %>
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="section__title">공구 <span class="section__count"><%= groupBuyTotal %></span></h2>
+  <div class="stats">
+    <% statuses.forEach((s) => { %>
+      <a href="/admin/group-buys?status=<%= s.status %>" class="stat">
+        <p class="stat__label"><%= s.label %></p><p class="stat__value"><%= s.count %>개</p>
+      </a>
+    <% }) %>
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="section__title">주문 (모의 결제)</h2>
+  <div class="stats">
+    <% orders.forEach((o) => { %>
+      <div class="stat">
+        <p class="stat__label"><%= o.label %></p>
+        <p class="stat__value"><%= o.count %>건</p>
+        <p class="stat__sub"><%= o.totalText %></p>
+      </div>
+    <% }) %>
+  </div>
+</section>

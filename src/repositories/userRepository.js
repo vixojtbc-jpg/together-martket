@@ -34,4 +34,36 @@ async function create({ email, passwordHash, nickname, role }) {
   return result.insertId;
 }
 
-module.exports = { findById, findByEmailWithHash, existsByEmail, existsByNickname, create };
+// 관리자: 회원 목록 (최근 가입 순)
+async function findAllForAdmin(limit = 200) {
+  const [rows] = await db.query(
+    `SELECT u.id, u.email, u.nickname, u.role, u.created_at,
+            (SELECT COUNT(*) FROM group_buys gb WHERE gb.host_id = u.id) AS hosted_count,
+            (SELECT COUNT(*) FROM participations p WHERE p.user_id = u.id AND p.status = 'JOINED') AS joined_count
+       FROM users u
+      ORDER BY u.created_at DESC, u.id DESC
+      LIMIT ?`,
+    [limit],
+  );
+  return rows;
+}
+
+async function countByRole() {
+  const [rows] = await db.query('SELECT role, COUNT(*) AS count FROM users GROUP BY role');
+  return rows;
+}
+
+async function updateRole(id, role) {
+  await db.query('UPDATE users SET role = ? WHERE id = ?', [role, id]);
+}
+
+module.exports = {
+  findById,
+  findByEmailWithHash,
+  existsByEmail,
+  existsByNickname,
+  create,
+  findAllForAdmin,
+  countByRole,
+  updateRole,
+};

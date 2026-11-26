@@ -49,4 +49,19 @@ async function markPaid(conn, id) {
   await conn.query("UPDATE orders SET status = 'PAID', paid_at = UTC_TIMESTAMP() WHERE id = ?", [id]);
 }
 
-module.exports = { createPendingForGroupBuy, findByUser, findById, findByIdForUpdate, markPaid };
+// 관리자 대시보드: 주문 상태별 건수와 금액 합계
+async function statsByStatus() {
+  const [rows] = await db.query(
+    'SELECT status, COUNT(*) AS count, COALESCE(SUM(amount), 0) AS total FROM orders GROUP BY status',
+  );
+  return rows;
+}
+
+module.exports = {
+  createPendingForGroupBuy,
+  findByUser,
+  findById,
+  findByIdForUpdate,
+  markPaid,
+  statsByStatus,
+};

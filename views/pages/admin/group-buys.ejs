@@ -1,0 +1,45 @@
+<h1 class="admin__title">관리자</h1>
+<%- include('../../partials/adminNav', { tab }) %>
+
+<section class="section">
+  <h2 class="section__title">공구 관리 <span class="section__count"><%= groupBuys.length %></span></h2>
+
+  <nav class="chips" aria-label="상태 필터">
+    <a href="/admin/group-buys" class="chip <%= !filter ? 'chip--active' : '' %>">전체</a>
+    <% filters.forEach((f) => { %>
+      <a href="/admin/group-buys?status=<%= f.value %>" class="chip <%= filter === f.value ? 'chip--active' : '' %>"><%= f.label %></a>
+    <% }) %>
+  </nav>
+
+  <% if (groupBuys.length === 0) { %>
+    <div class="empty"><p>해당하는 공구가 없어요.</p></div>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr><th>ID</th><th>공구</th><th>공구장</th><th>수량</th><th>마감</th><th>상태</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% groupBuys.forEach((gb) => { %>
+            <tr>
+              <td><%= gb.id %></td>
+              <td><a href="/group-buys/<%= gb.id %>" class="link"><%= gb.title %></a><br><span class="table__sub"><%= gb.salePriceText %></span></td>
+              <td><%= gb.hostNickname %></td>
+              <td class="table__nowrap"><%= gb.currentQuantity %>/<%= gb.targetQuantity %></td>
+              <td class="table__nowrap"><%= gb.deadlineText %></td>
+              <td><span class="tag tag--<%= gb.status.toLowerCase() %>"><%= gb.statusText %></span></td>
+              <td>
+                <% if (gb.canCancel) { %>
+                  <form method="POST" action="/admin/group-buys/<%= gb.id %>/cancel<%= filter ? `?status=${filter}` : '' %>"
+                        data-confirm="공구 #<%= gb.id %>를 강제 취소할까요? 모든 참여가 함께 취소돼요.">
+                    <button type="submit" class="btn btn--ghost btn--sm">강제 취소</button>
+                  </form>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
