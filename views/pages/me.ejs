@@ -1,6 +1,7 @@
 <section class="profile">
   <h1 class="profile__name"><%= profile.nickname %>님</h1>
   <p class="profile__meta"><%= profile.roleText %> · <%= profile.email %></p>
+  <a href="/orders" class="btn btn--ghost btn--sm profile__link">주문 내역 보기</a>
 </section>
 
 <section class="section">
@@ -23,9 +24,15 @@
             <p class="list-item__meta">
               <span class="tag tag--<%= p.groupBuyStatus.toLowerCase() %>"><%= p.groupBuyStatusText %></span>
               <span class="tag <%= p.status === 'JOINED' ? 'tag--joined' : '' %>"><%= p.statusText %></span>
+              <% if (p.orderStatusText) { %>
+                <span class="tag tag--<%= p.orderStatus.toLowerCase() %>"><%= p.orderStatusText %></span>
+              <% } %>
             </p>
             <p class="list-item__meta"><%= p.quantity %>개 · <strong><%= p.amountText %></strong> · 마감 <%= p.deadlineText %></p>
           </div>
+          <% if (p.orderStatus === 'PENDING') { %>
+            <a href="/orders/<%= p.orderId %>/pay" class="btn btn--primary btn--sm list-item__action">결제하기</a>
+          <% } %>
           <% if (p.canCancel) { %>
             <form method="POST" action="/group-buys/<%= p.groupBuyId %>/participations?_method=DELETE"
                   class="list-item__action" data-confirm="참여를 취소할까요? (<%= p.quantity %>개 전체가 취소돼요)">

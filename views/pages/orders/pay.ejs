@@ -1,0 +1,23 @@
+<section class="form-page">
+  <h1 class="form-page__title">결제하기</h1>
+
+  <div class="form">
+    <p class="alert alert--info">
+      공구마켓은 학습용 서비스라 <strong>실제 결제가 이루어지지 않는 모의 결제</strong>예요.
+      카드 번호 등 결제 정보를 입력하지 않아요.
+    </p>
+
+    <dl class="receipt">
+      <div><dt>상품</dt><dd><%= order.title %></dd></div>
+      <div><dt>단가</dt><dd><%= order.unitPriceText %></dd></div>
+      <div><dt>수량</dt><dd><%= order.quantity %>개</dd></div>
+      <div class="receipt__total"><dt>결제 금액</dt><dd><%= order.amountText %></dd></div>
+    </dl>
+
+    <form method="POST" action="/orders/<%= order.id %>/pay">
+      <button type="submit" class="btn btn--primary btn--block"><%= order.amountText %> 모의 결제하기</button>
+    </form>
+  </div>
+
+  <p class="form-page__alt"><a href="/orders">← 주문 내역으로</a></p>
+</section>

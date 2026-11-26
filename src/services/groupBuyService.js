@@ -1,6 +1,7 @@
 // 공구 비즈니스 로직. 공구 상태 변경은 이 파일에서만 한다.
 const groupBuyRepository = require('../repositories/groupBuyRepository');
 const participationRepository = require('../repositories/participationRepository');
+const orderRepository = require('../repositories/orderRepository');
 const { withTransaction } = require('../repositories/transaction');
 const AppError = require('../utils/AppError');
 const { GROUP_BUY_STATUS } = require('../utils/labels');
@@ -237,7 +238,9 @@ async function cancelGroupBuy(user, id, now = new Date()) {
 
 // ───────── 자동 마감 ─────────
 
-// 공구 하나를 마감 처리: 목표 달성 → CLOSED, 미달 → FAILED (참여 전부 자동 취소)
+// 공구 하나를 마감 처리
+// - 목표 달성 → CLOSED + 참여자별 결제 대기 주문 생성
+// - 목표 미달 → FAILED + 참여 전부 자동 취소
 // 이미 처리됐거나 마감 전이면 null
 async function closeOne(id, now = new Date()) {
   return withTransaction(async (conn) => {
@@ -247,7 +250,8 @@ async function closeOne(id, now = new Date()) {
 
     if (gb.current_quantity >= gb.target_quantity) {
       await groupBuyRepository.updateStatus(conn, id, 'CLOSED');
-      return { id, status: 'CLOSED' };
+      const orderCount = await orderRepository.createPendingForGroupBuy(conn, id, gb.sale_price);
+      return { id, status: 'CLOSED', orderCount };
     }
     await groupBuyRepository.updateStatus(conn, id, 'FAILED');
     const canceledCount = await participationRepository.cancelAllJoined(conn, id);

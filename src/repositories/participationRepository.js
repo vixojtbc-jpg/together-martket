@@ -48,9 +48,11 @@ async function findByUserWithGroupBuy(userId) {
   const [rows] = await db.query(
     `SELECT p.id, p.quantity, p.status, p.created_at,
             gb.id AS group_buy_id, gb.title, gb.image_path, gb.sale_price,
-            gb.status AS group_buy_status, gb.deadline_at
+            gb.status AS group_buy_status, gb.deadline_at,
+            o.id AS order_id, o.status AS order_status
        FROM participations p
        JOIN group_buys gb ON gb.id = p.group_buy_id
+       LEFT JOIN orders o ON o.participation_id = p.id
       WHERE p.user_id = ?
       ORDER BY p.created_at DESC, p.id DESC`,
     [userId],

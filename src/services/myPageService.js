@@ -2,7 +2,7 @@
 const participationRepository = require('../repositories/participationRepository');
 const groupBuyRepository = require('../repositories/groupBuyRepository');
 const groupBuyService = require('./groupBuyService');
-const { GROUP_BUY_STATUS, PARTICIPATION_STATUS, ROLE } = require('../utils/labels');
+const { GROUP_BUY_STATUS, PARTICIPATION_STATUS, ORDER_STATUS, ROLE } = require('../utils/labels');
 const { formatPrice, formatKST } = require('../utils/format');
 
 async function getMyPage(user, now = new Date()) {
@@ -23,6 +23,9 @@ async function getMyPage(user, now = new Date()) {
       deadlineText: formatKST(p.deadline_at),
       joinedAtText: formatKST(p.created_at),
       canCancel: p.status === 'JOINED' && gbOpen,
+      orderId: p.order_id,
+      orderStatus: p.order_status,
+      orderStatusText: p.order_status ? ORDER_STATUS[p.order_status] : null,
     };
   });
 

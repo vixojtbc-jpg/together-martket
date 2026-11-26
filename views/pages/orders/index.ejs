@@ -1,0 +1,40 @@
+<section class="section">
+  <h1 class="section__title">주문 내역 <span class="section__count"><%= orders.length %></span></h1>
+
+  <% if (pendingCount > 0) { %>
+    <p class="alert alert--info">결제를 기다리는 주문이 <strong><%= pendingCount %>건</strong> 있어요. (합계 <%= pendingTotalText %>)</p>
+  <% } %>
+
+  <% if (orders.length === 0) { %>
+    <div class="empty">
+      <p>아직 주문 내역이 없어요.</p>
+      <p class="empty__sub">참여한 공구가 목표를 달성하고 마감되면 이곳에 주문이 생겨요.</p>
+    </div>
+  <% } else { %>
+    <ul class="list">
+      <% orders.forEach((o) => { %>
+        <li class="list-item">
+          <a href="/group-buys/<%= o.groupBuyId %>" class="list-item__thumb">
+            <% if (o.imagePath) { %><img src="/uploads/<%= o.imagePath %>" alt="" loading="lazy"><% } %>
+          </a>
+          <div class="list-item__body">
+            <a href="/group-buys/<%= o.groupBuyId %>" class="list-item__title"><%= o.title %></a>
+            <p class="list-item__meta">
+              <span class="tag tag--<%= o.status.toLowerCase() %>"><%= o.statusText %></span>
+              주문번호 <%= o.id %>
+            </p>
+            <p class="list-item__meta">
+              <%= o.unitPriceText %> × <%= o.quantity %>개 = <strong><%= o.amountText %></strong>
+            </p>
+            <p class="list-item__meta">
+              <%= o.paidAtText ? `결제 ${o.paidAtText}` : `주문 ${o.createdAtText}` %>
+            </p>
+          </div>
+          <% if (o.isPending) { %>
+            <a href="/orders/<%= o.id %>/pay" class="btn btn--primary btn--sm list-item__action">결제하기</a>
+          <% } %>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+</section>
