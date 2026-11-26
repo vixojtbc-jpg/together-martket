@@ -1,0 +1,66 @@
+<article class="detail">
+  <div class="detail__thumb">
+    <% if (gb.imagePath) { %>
+      <img src="/uploads/<%= gb.imagePath %>" alt="<%= gb.title %>" class="detail__img">
+    <% } else { %>
+      <span class="card__noimg">이미지 준비 중</span>
+    <% } %>
+  </div>
+
+  <div class="detail__info">
+    <div class="detail__badges">
+      <span class="badge badge--status badge--<%= gb.status.toLowerCase() %>"><%= gb.statusText %></span>
+      <% if (gb.isClosingSoon) { %><span class="badge badge--urgent">마감 임박</span><% } %>
+    </div>
+
+    <h1 class="detail__title"><%= gb.title %></h1>
+    <p class="detail__host">공구장 <strong><%= gb.hostNickname %></strong></p>
+
+    <div class="detail__price">
+      <% if (gb.discountRate > 0) { %>
+        <span class="detail__discount"><%= gb.discountRate %>%</span>
+      <% } %>
+      <span class="detail__sale"><%= gb.salePriceText %></span>
+      <% if (gb.discountRate > 0) { %>
+        <span class="card__original"><%= gb.originalPriceText %></span>
+      <% } %>
+    </div>
+
+    <div class="detail__status">
+      <div class="progress progress--lg" role="progressbar" aria-label="목표 달성률"
+           aria-valuenow="<%= gb.progress %>" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress__bar" style="width: <%= gb.progressBarWidth %>%"></div>
+      </div>
+      <p class="card__meta">
+        <strong class="card__percent"><%= gb.progress %>% 달성</strong>
+        <span><%= gb.currentQuantity %> / 목표 <%= gb.targetQuantity %>개</span>
+      </p>
+
+      <dl class="detail__facts">
+        <div><dt>참여 인원</dt><dd><%= gb.participantCount %>명</dd></div>
+        <div><dt>최대 수량</dt><dd><%= gb.maxQuantity === null ? '제한 없음' : gb.maxQuantity + '개' %></dd></div>
+        <% if (gb.remainingCapacity !== null) { %>
+          <div><dt>남은 수량</dt><dd><%= gb.remainingCapacity %>개</dd></div>
+        <% } %>
+        <div><dt>마감</dt><dd><%= gb.deadlineText %></dd></div>
+        <div>
+          <dt>남은 시간</dt>
+          <dd class="<%= gb.isClosingSoon ? 'card__time--urgent' : '' %>"><%= gb.remainingText %></dd>
+        </div>
+      </dl>
+
+      <% if (gb.isOpen && gb.remainingToTarget > 0) { %>
+        <p class="detail__hint">목표까지 <strong><%= gb.remainingToTarget %>개</strong> 남았어요!</p>
+      <% } %>
+    </div>
+
+    <div class="detail__action">
+      <%- include('../../partials/participationBox', { gb }) %>
+    </div>
+  </div>
+</article>
+
+<section class="detail__desc">
+  <h2 class="section__title">상품 설명</h2>
+  <p class="detail__desc-text"><%= gb.description %></p>
+</section>

@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const methodOverride = require('method-override');
 
 const indexRouter = require('./routes/index');
+const groupBuysRouter = require('./routes/groupBuys');
 const { notFound, errorHandler } = require('./middlewares/errorHandler');
 
 const app = express();
@@ -44,6 +45,7 @@ app.use((req, res, next) => {
 
 // 라우터
 app.use('/', indexRouter);
+app.use('/group-buys', groupBuysRouter);
 
 // 404 / 에러 처리 (항상 마지막)
 app.use(notFound);

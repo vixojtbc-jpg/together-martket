@@ -16,4 +16,18 @@ async function findOpenList() {
   return rows;
 }
 
-module.exports = { findOpenList };
+// 상세 화면: 공구 + 공구장 닉네임 + 참여자 수
+async function findDetailById(id) {
+  const [rows] = await db.query(
+    `SELECT gb.*, u.nickname AS host_nickname,
+            (SELECT COUNT(*) FROM participations p
+              WHERE p.group_buy_id = gb.id AND p.status = 'JOINED') AS participant_count
+       FROM group_buys gb
+       JOIN users u ON u.id = gb.host_id
+      WHERE gb.id = ?`,
+    [id],
+  );
+  return rows[0] || null;
+}
+
+module.exports = { OPEN_STATUSES, findOpenList, findDetailById };

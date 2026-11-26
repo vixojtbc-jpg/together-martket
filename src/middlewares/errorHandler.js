@@ -11,7 +11,12 @@ function notFound(req, res, next) {
 // eslint-disable-next-line no-unused-vars
 function errorHandler(err, req, res, next) {
   const status = err.status || err.statusCode || 500;
-  console.error(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`, err);
+  const where = `[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`;
+  if (status >= 500) {
+    console.error(where, err); // 서버 문제: 스택까지 상세히
+  } else {
+    console.warn(`${where} ${status} ${err.message}`); // 사용자 요청 문제: 한 줄만
+  }
 
   if (res.headersSent) {
     return next(err);

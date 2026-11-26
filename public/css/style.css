@@ -267,6 +267,163 @@ a {
   font-weight: 700;
 }
 
+/* 공구 상세 */
+.detail {
+  display: grid;
+  gap: 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.detail__thumb {
+  aspect-ratio: 1 / 1;
+  background: #f1f1f1;
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.detail__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.detail__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.badge--status {
+  background: #777;
+}
+
+.badge--recruiting {
+  background: var(--color-primary);
+}
+
+.badge--succeeded,
+.badge--closed {
+  background: #2e7d32;
+}
+
+.badge--failed,
+.badge--canceled {
+  background: #9e9e9e;
+}
+
+.detail__title {
+  font-size: 1.35rem;
+  margin: 8px 0 4px;
+  line-height: 1.35;
+}
+
+.detail__host {
+  margin: 0 0 12px;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.detail__price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.detail__discount {
+  color: var(--color-discount);
+  font-size: 1.8rem;
+  font-weight: 800;
+}
+
+.detail__sale {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.detail__status {
+  margin-top: 16px;
+}
+
+.progress--lg {
+  height: 10px;
+}
+
+.detail__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 16px;
+  margin: 16px 0 0;
+  padding: 12px;
+  background: var(--color-bg);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+}
+
+.detail__facts dt {
+  color: var(--color-muted);
+  font-size: 0.8rem;
+}
+
+.detail__facts dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.detail__hint {
+  margin: 12px 0 0;
+  font-size: 0.9rem;
+}
+
+.detail__hint strong {
+  color: var(--color-primary);
+}
+
+.detail__action {
+  margin-top: 16px;
+}
+
+.detail__desc {
+  margin-top: 24px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.detail__desc-text {
+  margin: 0;
+  white-space: pre-line;
+}
+
+.notice {
+  margin: 0;
+  padding: 12px;
+  background: var(--color-bg);
+  border-radius: var(--radius);
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.btn--block {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-size: 1rem;
+  padding: 14px;
+}
+
+.btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
 /* 빈 상태 */
 .empty {
   background: var(--color-surface);
@@ -356,6 +513,12 @@ a {
   .card-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16px;
+  }
+
+  .detail {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 32px;
+    padding: 24px;
   }
 }
 
