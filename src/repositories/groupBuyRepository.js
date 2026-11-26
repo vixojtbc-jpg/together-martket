@@ -44,6 +44,21 @@ async function updateQuantityAndStatus(conn, id, currentQuantity, status) {
   ]);
 }
 
+// 마이페이지: 내가 연 공구 (최근 등록 순) + 참여 인원
+async function findByHost(hostId) {
+  const [rows] = await db.query(
+    `SELECT gb.id, gb.title, gb.image_path, gb.original_price, gb.sale_price,
+            gb.target_quantity, gb.max_quantity, gb.current_quantity, gb.deadline_at, gb.status,
+            (SELECT COUNT(*) FROM participations p
+              WHERE p.group_buy_id = gb.id AND p.status = 'JOINED') AS participant_count
+       FROM group_buys gb
+      WHERE gb.host_id = ?
+      ORDER BY gb.created_at DESC, gb.id DESC`,
+    [hostId],
+  );
+  return rows;
+}
+
 async function findById(id) {
   const [rows] = await db.query('SELECT * FROM group_buys WHERE id = ?', [id]);
   return rows[0] || null;
@@ -99,6 +114,7 @@ module.exports = {
   OPEN_STATUSES,
   findOpenList,
   findDetailById,
+  findByHost,
   findById,
   findByIdForUpdate,
   create,

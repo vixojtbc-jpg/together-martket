@@ -43,7 +43,23 @@ async function cancelAllJoined(conn, groupBuyId) {
   return result.affectedRows;
 }
 
+// 마이페이지: 내가 참여한 공구 (최근 참여 순)
+async function findByUserWithGroupBuy(userId) {
+  const [rows] = await db.query(
+    `SELECT p.id, p.quantity, p.status, p.created_at,
+            gb.id AS group_buy_id, gb.title, gb.image_path, gb.sale_price,
+            gb.status AS group_buy_status, gb.deadline_at
+       FROM participations p
+       JOIN group_buys gb ON gb.id = p.group_buy_id
+      WHERE p.user_id = ?
+      ORDER BY p.created_at DESC, p.id DESC`,
+    [userId],
+  );
+  return rows;
+}
+
 module.exports = {
+  findByUserWithGroupBuy,
   findByGroupBuyAndUser,
   findForUpdate,
   insert,

@@ -647,6 +647,146 @@ textarea.field__input {
   margin-top: 8px;
 }
 
+/* 마이페이지 / 목록형 리스트 */
+.profile {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  margin-bottom: 24px;
+}
+
+.profile__name {
+  margin: 0 0 4px;
+  font-size: 1.3rem;
+}
+
+.profile__meta {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.section + .section {
+  margin-top: 32px;
+}
+
+.section__title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.section__action {
+  margin-left: auto;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 10px;
+}
+
+.list-item--muted {
+  opacity: 0.6;
+}
+
+.list-item__thumb {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  background: #f1f1f1;
+  overflow: hidden;
+}
+
+.list-item__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.list-item__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.list-item__title {
+  display: block;
+  font-weight: 700;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-item__meta {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: var(--color-muted);
+}
+
+.list-item__action {
+  flex: none;
+  margin: 0;
+}
+
+.tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  background: #eee;
+  color: #555;
+  margin-right: 2px;
+}
+
+.tag--recruiting,
+.tag--joined {
+  background: #fff3e0;
+  color: #c25e00;
+}
+
+.tag--succeeded,
+.tag--closed,
+.tag--paid {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.tag--pending {
+  background: #fff8e1;
+  color: #8a6d00;
+}
+
+.tag--failed,
+.tag--canceled {
+  background: #f1f1f1;
+  color: #888;
+}
+
+.btn--sm {
+  padding: 6px 12px;
+  font-size: 0.82rem;
+}
+
+.link {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
 /* 빈 상태 */
 .empty {
   background: var(--color-surface);

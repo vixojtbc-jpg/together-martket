@@ -10,6 +10,7 @@ const { loadCurrentUser } = require('./middlewares/auth');
 const indexRouter = require('./routes/index');
 const authRouter = require('./routes/auth');
 const groupBuysRouter = require('./routes/groupBuys');
+const meRouter = require('./routes/me');
 const { notFound, errorHandler } = require('./middlewares/errorHandler');
 
 const app = express();
@@ -61,6 +62,7 @@ app.use(loadCurrentUser);
 app.use('/', indexRouter);
 app.use('/', authRouter);
 app.use('/group-buys', groupBuysRouter);
+app.use('/me', meRouter);
 
 // 404 / 에러 처리 (항상 마지막)
 app.use(notFound);

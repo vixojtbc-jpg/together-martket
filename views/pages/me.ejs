@@ -1,0 +1,78 @@
+<section class="profile">
+  <h1 class="profile__name"><%= profile.nickname %>님</h1>
+  <p class="profile__meta"><%= profile.roleText %> · <%= profile.email %></p>
+</section>
+
+<section class="section">
+  <h2 class="section__title">내가 참여한 공구 <span class="section__count"><%= activeCount %></span></h2>
+
+  <% if (participations.length === 0) { %>
+    <div class="empty">
+      <p>아직 참여한 공구가 없어요.</p>
+      <p class="empty__sub"><a href="/" class="link">진행 중인 공구 둘러보기 →</a></p>
+    </div>
+  <% } else { %>
+    <ul class="list">
+      <% participations.forEach((p) => { %>
+        <li class="list-item <%= p.status === 'CANCELED' ? 'list-item--muted' : '' %>">
+          <a href="/group-buys/<%= p.groupBuyId %>" class="list-item__thumb">
+            <% if (p.imagePath) { %><img src="/uploads/<%= p.imagePath %>" alt="" loading="lazy"><% } %>
+          </a>
+          <div class="list-item__body">
+            <a href="/group-buys/<%= p.groupBuyId %>" class="list-item__title"><%= p.title %></a>
+            <p class="list-item__meta">
+              <span class="tag tag--<%= p.groupBuyStatus.toLowerCase() %>"><%= p.groupBuyStatusText %></span>
+              <span class="tag <%= p.status === 'JOINED' ? 'tag--joined' : '' %>"><%= p.statusText %></span>
+            </p>
+            <p class="list-item__meta"><%= p.quantity %>개 · <strong><%= p.amountText %></strong> · 마감 <%= p.deadlineText %></p>
+          </div>
+          <% if (p.canCancel) { %>
+            <form method="POST" action="/group-buys/<%= p.groupBuyId %>/participations?_method=DELETE"
+                  class="list-item__action" data-confirm="참여를 취소할까요? (<%= p.quantity %>개 전체가 취소돼요)">
+              <button type="submit" class="btn btn--ghost btn--sm">참여 취소</button>
+            </form>
+          <% } %>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+</section>
+
+<% if (hosted) { %>
+  <section class="section">
+    <h2 class="section__title">
+      내가 연 공구 <span class="section__count"><%= hosted.length %></span>
+      <a href="/group-buys/new" class="btn btn--primary btn--sm section__action">+ 공구 열기</a>
+    </h2>
+
+    <% if (hosted.length === 0) { %>
+      <div class="empty">
+        <p>아직 연 공구가 없어요.</p>
+        <p class="empty__sub"><a href="/group-buys/new" class="link">첫 공구를 열어 보세요 →</a></p>
+      </div>
+    <% } else { %>
+      <ul class="list">
+        <% hosted.forEach((gb) => { %>
+          <li class="list-item">
+            <a href="/group-buys/<%= gb.id %>" class="list-item__thumb">
+              <% if (gb.imagePath) { %><img src="/uploads/<%= gb.imagePath %>" alt="" loading="lazy"><% } %>
+            </a>
+            <div class="list-item__body">
+              <a href="/group-buys/<%= gb.id %>" class="list-item__title"><%= gb.title %></a>
+              <p class="list-item__meta">
+                <span class="tag tag--<%= gb.status.toLowerCase() %>"><%= gb.statusText %></span>
+                <%= gb.salePriceText %> · 참여 <%= gb.participantCount %>명
+              </p>
+              <p class="list-item__meta">
+                <%= gb.currentQuantity %>/<%= gb.targetQuantity %>개 (<%= gb.progress %>%) · 마감 <%= gb.deadlineText %>
+              </p>
+            </div>
+            <% if (gb.canEdit) { %>
+              <a href="/group-buys/<%= gb.id %>/edit" class="btn btn--ghost btn--sm list-item__action">수정</a>
+            <% } %>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </section>
+<% } %>
