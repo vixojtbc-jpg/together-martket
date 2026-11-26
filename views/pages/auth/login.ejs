@@ -1,0 +1,23 @@
+<section class="form-page">
+  <h1 class="form-page__title">로그인</h1>
+
+  <form method="POST" action="/login" class="form" novalidate>
+    <% if (error) { %><p class="alert alert--error"><%= error %></p><% } %>
+
+    <div class="field">
+      <label for="email" class="field__label">이메일</label>
+      <input type="email" id="email" name="email" class="field__input" value="<%= values.email || '' %>"
+             autocomplete="email" required>
+    </div>
+
+    <div class="field">
+      <label for="password" class="field__label">비밀번호</label>
+      <input type="password" id="password" name="password" class="field__input"
+             autocomplete="current-password" required>
+    </div>
+
+    <button type="submit" class="btn btn--primary btn--block">로그인</button>
+  </form>
+
+  <p class="form-page__alt">아직 회원이 아니신가요? <a href="/signup">회원가입</a></p>
+</section>

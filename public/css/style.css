@@ -424,6 +424,156 @@ a {
   cursor: not-allowed;
 }
 
+/* 헤더 내비게이션 추가 요소 */
+.nav {
+  align-items: center;
+}
+
+.nav__link--accent {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.nav__form {
+  margin: 0;
+}
+
+.nav__button {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* 알림 메시지 */
+.alert {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  font-size: 0.92rem;
+}
+
+.alert--success {
+  background: #e8f5e9;
+  color: #1b5e20;
+}
+
+.alert--error {
+  background: #ffebee;
+  color: #b71c1c;
+}
+
+.alert--info {
+  background: #fff3e0;
+  color: #8a4b00;
+}
+
+/* 폼 */
+.form-page {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.form-page--wide {
+  max-width: 640px;
+}
+
+.form-page__title {
+  font-size: 1.4rem;
+  margin: 8px 0 20px;
+  text-align: center;
+}
+
+.form-page__alt {
+  text-align: center;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.form-page__alt a {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.form {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+}
+
+.field {
+  margin: 0 0 16px;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.field__label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+  padding: 0;
+}
+
+.field__input {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font: inherit;
+  background: #fff;
+}
+
+.field__input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -1px;
+  border-color: transparent;
+}
+
+textarea.field__input {
+  min-height: 160px;
+  resize: vertical;
+}
+
+.field__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.field__help {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+.field__error {
+  margin: 4px 0 0;
+  font-size: 0.82rem;
+  color: var(--color-discount);
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  font-size: 0.92rem;
+}
+
+.choice:has(input:checked) {
+  border-color: var(--color-primary);
+  background: #fff7ef;
+}
+
 /* 빈 상태 */
 .empty {
   background: var(--color-surface);

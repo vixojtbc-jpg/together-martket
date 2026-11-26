@@ -2,7 +2,21 @@
   <div class="container site-header__inner">
     <a href="/" class="logo">공구<span class="logo__accent">마켓</span></a>
     <nav class="nav">
-      <a href="/" class="nav__link">공구 목록</a>
+      <% if (currentUser) { %>
+        <% if (currentUser.role === 'HOST') { %>
+          <a href="/group-buys/new" class="nav__link nav__link--accent">공구 열기</a>
+        <% } %>
+        <% if (currentUser.role === 'ADMIN') { %>
+          <a href="/admin" class="nav__link">관리자</a>
+        <% } %>
+        <a href="/me" class="nav__link"><%= currentUser.nickname %>님</a>
+        <form method="POST" action="/logout" class="nav__form">
+          <button type="submit" class="nav__link nav__button">로그아웃</button>
+        </form>
+      <% } else { %>
+        <a href="/login" class="nav__link">로그인</a>
+        <a href="/signup" class="nav__link nav__link--accent">회원가입</a>
+      <% } %>
     </nav>
   </div>
 </header>
