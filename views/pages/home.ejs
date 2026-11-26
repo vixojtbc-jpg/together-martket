@@ -4,8 +4,18 @@
 </section>
 
 <section class="section">
-  <h2 class="section__title">진행 중인 공구</h2>
-  <div class="empty">
-    <p>공구 목록을 준비하고 있어요.</p>
-  </div>
+  <h2 class="section__title">진행 중인 공구 <span class="section__count"><%= groupBuys.length %></span></h2>
+
+  <% if (groupBuys.length === 0) { %>
+    <div class="empty">
+      <p>지금 진행 중인 공구가 없어요.</p>
+      <p class="empty__sub">새로운 공구가 열리면 이곳에서 가장 먼저 만나보세요.</p>
+    </div>
+  <% } else { %>
+    <div class="card-grid">
+      <% groupBuys.forEach((gb) => { %>
+        <%- include('../partials/groupBuyCard', { gb }) %>
+      <% }) %>
+    </div>
+  <% } %>
 </section>

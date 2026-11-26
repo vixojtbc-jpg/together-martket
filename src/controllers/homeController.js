@@ -1,7 +1,9 @@
-// GET /
-// 지금은 레이아웃만 표시한다. 공구 목록은 다음 단계(기능 1)에서 구현한다.
+const groupBuyService = require('../services/groupBuyService');
+
+// GET / — 진행 중인 공구 목록
 async function home(req, res) {
-  res.render('pages/home', { title: '공구마켓' });
+  const groupBuys = await groupBuyService.getOpenGroupBuys();
+  res.render('pages/home', { title: '공구마켓', groupBuys });
 }
 
 module.exports = { home };

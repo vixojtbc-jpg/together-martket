@@ -1,0 +1,39 @@
+<a href="/group-buys/<%= gb.id %>" class="card">
+  <div class="card__thumb">
+    <% if (gb.imagePath) { %>
+      <img src="/uploads/<%= gb.imagePath %>" alt="<%= gb.title %>" class="card__img" loading="lazy">
+    <% } else { %>
+      <span class="card__noimg">이미지 준비 중</span>
+    <% } %>
+    <div class="card__badges">
+      <% if (gb.isClosingSoon) { %><span class="badge badge--urgent">마감 임박</span><% } %>
+      <% if (gb.isSucceeded) { %><span class="badge badge--success">목표 달성</span><% } %>
+    </div>
+  </div>
+
+  <div class="card__body">
+    <h3 class="card__title"><%= gb.title %></h3>
+
+    <div class="card__price">
+      <% if (gb.discountRate > 0) { %>
+        <span class="card__discount"><%= gb.discountRate %>%</span>
+      <% } %>
+      <span class="card__sale"><%= gb.salePriceText %></span>
+    </div>
+    <% if (gb.discountRate > 0) { %>
+      <p class="card__original"><%= gb.originalPriceText %></p>
+    <% } %>
+
+    <div class="progress" role="progressbar" aria-label="목표 달성률"
+         aria-valuenow="<%= gb.progress %>" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress__bar" style="width: <%= gb.progressBarWidth %>%"></div>
+    </div>
+    <p class="card__meta">
+      <strong class="card__percent"><%= gb.progress %>%</strong>
+      <span><%= gb.currentQuantity %>/<%= gb.targetQuantity %>개</span>
+    </p>
+    <p class="card__time <%= gb.isClosingSoon ? 'card__time--urgent' : '' %>" title="<%= gb.deadlineText %> 마감">
+      <%= gb.remainingText %>
+    </p>
+  </div>
+</a>
