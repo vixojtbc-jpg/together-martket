@@ -1,6 +1,7 @@
 const session = require('express-session');
 const MySQLStoreFactory = require('express-mysql-session');
 const db = require('./db');
+const { httpsEnabled } = require('./security');
 
 const MySQLStore = MySQLStoreFactory(session);
 const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
@@ -29,7 +30,7 @@ const sessionMiddleware = session({
   cookie: {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: httpsEnabled, // HTTPS 에서만 쿠키 전송 (운영 기본값)
     maxAge: SEVEN_DAYS,
   },
 });

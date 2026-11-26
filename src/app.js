@@ -4,6 +4,7 @@ const expressLayouts = require('express-ejs-layouts');
 const helmet = require('helmet');
 const methodOverride = require('method-override');
 
+const { isProd, httpsEnabled } = require('./config/security');
 const { sessionMiddleware } = require('./config/session');
 const flash = require('./middlewares/flash');
 const { loadCurrentUser } = require('./middlewares/auth');
@@ -17,7 +18,6 @@ const { notFound, errorHandler } = require('./middlewares/errorHandler');
 
 const app = express();
 const ROOT = path.join(__dirname, '..');
-const isProd = process.env.NODE_ENV === 'production';
 
 if (isProd) {
   // Nginx 뒤에서 secure 쿠키가 동작하도록
@@ -39,12 +39,12 @@ app.use((req, res, next) => {
 });
 
 // 공통 미들웨어
-// 로컬 http 개발 환경에서는 HTTPS 강제(HSTS, upgrade-insecure-requests)를 끈다.
+// http 로 접속하는 환경(로컬 개발, 도메인 없는 임시 운영)에서는 HTTPS 강제(HSTS, upgrade-insecure-requests)를 끈다.
 app.use(
   helmet({
-    hsts: isProd,
+    hsts: httpsEnabled,
     contentSecurityPolicy: {
-      directives: { upgradeInsecureRequests: isProd ? [] : null },
+      directives: { upgradeInsecureRequests: httpsEnabled ? [] : null },
     },
   }),
 );
