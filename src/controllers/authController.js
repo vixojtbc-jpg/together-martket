@@ -53,9 +53,12 @@ async function signup(req, res) {
   return res.status(400).render('pages/auth/signup', { title: '회원가입 - 공구마켓', values, errors });
 }
 
-// GET /login
+// GET /login  (?next=/group-buys/1 이면 로그인 후 그 페이지로)
 function showLogin(req, res) {
   if (req.user) return res.redirect('/');
+  if (typeof req.query.next === 'string') {
+    req.session.returnTo = sessionUtil.safeReturnTo(req.query.next);
+  }
   res.render('pages/auth/login', { title: '로그인 - 공구마켓', values: {}, error: null });
 }
 

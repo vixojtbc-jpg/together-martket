@@ -1,5 +1,44 @@
+<%# 공구 상세 - 참여 영역. gb: groupBuyService.getDetail() 결과 %>
+<% if (gb.myQuantity > 0) { %>
+  <div class="mine">
+    <p class="mine__title">✅ 이 공구에 참여 중이에요</p>
+    <p class="mine__desc"><strong><%= gb.myQuantity %>개</strong> · 예상 결제 금액 <strong><%= gb.myTotalText %></strong></p>
+  </div>
+<% } %>
+
 <% if (!gb.isOpen) { %>
   <p class="notice">참여 기간이 끝난 공구예요.</p>
+<% } else if (!currentUser) { %>
+  <a href="/login?next=/group-buys/<%= gb.id %>" class="btn btn--primary btn--block">로그인하고 참여하기</a>
+<% } else if (gb.isHost) { %>
+  <p class="notice">내가 연 공구예요.</p>
 <% } else { %>
-  <button type="button" class="btn btn--primary btn--block" disabled>참여 기능 준비 중</button>
+  <% if (gb.isSoldOut) { %>
+    <p class="notice">모든 수량이 마감되었어요.</p>
+  <% } else if (gb.joinableMax <= 0) { %>
+    <p class="notice">1인당 최대 <%= gb.perUserMax %>개까지 참여할 수 있어요.</p>
+  <% } else { %>
+    <form method="POST" action="/group-buys/<%= gb.id %>/participations" class="join-form"
+          data-price="<%= gb.salePrice %>">
+      <label for="quantity" class="field__label">
+        <%= gb.myQuantity > 0 ? '추가할 수량' : '참여 수량' %>
+        <span class="field__help">(최대 <%= gb.joinableMax %>개)</span>
+      </label>
+      <div class="join-form__row">
+        <input type="number" id="quantity" name="quantity" class="field__input join-form__qty"
+               value="1" min="1" max="<%= gb.joinableMax %>" step="1" required inputmode="numeric">
+        <p class="join-form__total">합계 <strong data-total><%= gb.salePriceText %></strong></p>
+      </div>
+      <button type="submit" class="btn btn--primary btn--block">
+        <%= gb.myQuantity > 0 ? '수량 추가하기' : '공구 참여하기' %>
+      </button>
+    </form>
+  <% } %>
+
+  <% if (gb.myQuantity > 0) { %>
+    <form method="POST" action="/group-buys/<%= gb.id %>/participations?_method=DELETE" class="cancel-form"
+          data-confirm="참여를 취소할까요? (<%= gb.myQuantity %>개 전체가 취소돼요)">
+      <button type="submit" class="btn btn--ghost btn--block">참여 취소</button>
+    </form>
+  <% } %>
 <% } %>

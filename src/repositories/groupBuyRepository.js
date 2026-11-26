@@ -30,4 +30,24 @@ async function findDetailById(id) {
   return rows[0] || null;
 }
 
-module.exports = { OPEN_STATUSES, findOpenList, findDetailById };
+// 트랜잭션 안에서 공구 행을 잠그고 조회 (참여/취소/상태 변경 시)
+async function findByIdForUpdate(conn, id) {
+  const [rows] = await conn.query('SELECT * FROM group_buys WHERE id = ? FOR UPDATE', [id]);
+  return rows[0] || null;
+}
+
+async function updateQuantityAndStatus(conn, id, currentQuantity, status) {
+  await conn.query('UPDATE group_buys SET current_quantity = ?, status = ? WHERE id = ?', [
+    currentQuantity,
+    status,
+    id,
+  ]);
+}
+
+module.exports = {
+  OPEN_STATUSES,
+  findOpenList,
+  findDetailById,
+  findByIdForUpdate,
+  updateQuantityAndStatus,
+};

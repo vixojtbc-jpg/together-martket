@@ -1,5 +1,7 @@
 // 공구 비즈니스 로직. 공구 상태 변경은 이 파일에서만 한다.
 const groupBuyRepository = require('../repositories/groupBuyRepository');
+const participationRepository = require('../repositories/participationRepository');
+const { withTransaction } = require('../repositories/transaction');
 const AppError = require('../utils/AppError');
 const { GROUP_BUY_STATUS } = require('../utils/labels');
 const { DAY, formatPrice, formatKST, formatRemaining } = require('../utils/format');
@@ -57,16 +59,38 @@ async function getOpenGroupBuys(now = new Date()) {
   return rows.map((row) => toCard(row, now));
 }
 
-async function getDetail(id, now = new Date()) {
+// 1인당 한 공구에 참여할 수 있는 최대 수량
+const PER_USER_MAX = 100;
+
+// 수량에 따라 RECRUITING <-> SUCCEEDED 결정 (마감 전 상태에서만 사용)
+function statusByQuantity(currentQuantity, targetQuantity) {
+  return currentQuantity >= targetQuantity ? 'SUCCEEDED' : 'RECRUITING';
+}
+
+async function getDetail(id, user = null, now = new Date()) {
   const row = await groupBuyRepository.findDetailById(id);
   if (!row) throw new AppError(404, '공구를 찾을 수 없어요.');
 
   const remainingCapacity =
     row.max_quantity === null ? null : Math.max(row.max_quantity - row.current_quantity, 0);
 
+  let myQuantity = 0;
+  if (user) {
+    const mine = await participationRepository.findByGroupBuyAndUser(id, user.id);
+    if (mine && mine.status === 'JOINED') myQuantity = mine.quantity;
+  }
+  const isHost = Boolean(user) && user.id === row.host_id;
+
+  // 이번에 더 참여할 수 있는 최대 수량
+  const joinableMax = Math.min(
+    PER_USER_MAX - myQuantity,
+    remainingCapacity === null ? PER_USER_MAX : remainingCapacity,
+  );
+
   return {
     ...toCard(row, now),
     description: row.description,
+    salePrice: row.sale_price,
     hostId: row.host_id,
     hostNickname: row.host_nickname,
     participantCount: Number(row.participant_count),
@@ -74,7 +98,79 @@ async function getDetail(id, now = new Date()) {
     remainingCapacity,
     isSoldOut: remainingCapacity === 0,
     remainingToTarget: Math.max(row.target_quantity - row.current_quantity, 0),
+    isHost,
+    myQuantity,
+    myTotalText: formatPrice(row.sale_price * myQuantity),
+    joinableMax: Math.max(joinableMax, 0),
+    perUserMax: PER_USER_MAX,
   };
 }
 
-module.exports = { getOpenGroupBuys, getDetail, isOpen, calcDiscountRate, calcProgress };
+// 공구 참여 (이미 참여했으면 수량 추가). 트랜잭션 + 공구 행 잠금으로 초과 참여를 막는다.
+async function join(userId, groupBuyId, quantity, now = new Date()) {
+  return withTransaction(async (conn) => {
+    const gb = await groupBuyRepository.findByIdForUpdate(conn, groupBuyId);
+    if (!gb) throw new AppError(404, '공구를 찾을 수 없어요.');
+    if (!isOpen(gb, now)) throw new AppError(409, '참여 기간이 끝났거나 참여할 수 없는 공구예요.');
+    if (gb.host_id === userId) throw new AppError(403, '내가 연 공구에는 참여할 수 없어요.');
+
+    if (gb.max_quantity !== null && gb.current_quantity + quantity > gb.max_quantity) {
+      const left = Math.max(gb.max_quantity - gb.current_quantity, 0);
+      throw new AppError(
+        409,
+        left === 0 ? '모든 수량이 마감되었어요.' : `남은 수량은 ${left}개예요. 수량을 줄여 주세요.`,
+      );
+    }
+
+    const mine = await participationRepository.findForUpdate(conn, groupBuyId, userId);
+    const before = mine && mine.status === 'JOINED' ? mine.quantity : 0;
+    const after = before + quantity;
+    if (after > PER_USER_MAX) {
+      throw new AppError(409, `1인당 최대 ${PER_USER_MAX}개까지 참여할 수 있어요. (현재 ${before}개 참여 중)`);
+    }
+
+    if (mine) {
+      // 수량 추가 또는 취소했던 참여를 다시 활성화
+      await participationRepository.updateQuantityAndStatus(conn, mine.id, after, 'JOINED');
+    } else {
+      await participationRepository.insert(conn, groupBuyId, userId, quantity);
+    }
+
+    const newCurrent = gb.current_quantity + quantity;
+    const newStatus = statusByQuantity(newCurrent, gb.target_quantity);
+    await groupBuyRepository.updateQuantityAndStatus(conn, groupBuyId, newCurrent, newStatus);
+
+    return { added: before > 0, quantity: after, reachedTarget: newStatus === 'SUCCEEDED' && gb.status !== 'SUCCEEDED' };
+  });
+}
+
+// 참여 취소 (마감 전, RECRUITING/SUCCEEDED 상태에서만)
+async function cancelParticipation(userId, groupBuyId, now = new Date()) {
+  return withTransaction(async (conn) => {
+    const gb = await groupBuyRepository.findByIdForUpdate(conn, groupBuyId);
+    if (!gb) throw new AppError(404, '공구를 찾을 수 없어요.');
+    if (!isOpen(gb, now)) throw new AppError(409, '마감되었거나 취소할 수 없는 공구예요.');
+
+    const mine = await participationRepository.findForUpdate(conn, groupBuyId, userId);
+    if (!mine || mine.status !== 'JOINED') throw new AppError(409, '참여 내역이 없어요.');
+
+    await participationRepository.updateQuantityAndStatus(conn, mine.id, mine.quantity, 'CANCELED');
+
+    const newCurrent = Math.max(gb.current_quantity - mine.quantity, 0);
+    const newStatus = statusByQuantity(newCurrent, gb.target_quantity);
+    await groupBuyRepository.updateQuantityAndStatus(conn, groupBuyId, newCurrent, newStatus);
+
+    return { quantity: mine.quantity };
+  });
+}
+
+module.exports = {
+  PER_USER_MAX,
+  getOpenGroupBuys,
+  getDetail,
+  join,
+  cancelParticipation,
+  isOpen,
+  calcDiscountRate,
+  calcProgress,
+};
