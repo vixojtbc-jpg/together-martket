@@ -5,9 +5,11 @@ const db = require('./config/db');
 const { startCloseScheduler } = require('./services/closeScheduler');
 
 const PORT = Number(process.env.PORT) || 3000;
+// 운영에서는 Nginx 를 통해서만 들어오도록 서버 내부 주소(127.0.0.1)에서만 대기한다.
+const HOST = process.env.NODE_ENV === 'production' ? '127.0.0.1' : undefined;
 
-const server = app.listen(PORT, () => {
-  console.log(`공구마켓 서버 실행 중: http://localhost:${PORT}`);
+const server = app.listen(PORT, HOST, () => {
+  console.log(`공구마켓 서버 실행 중: http://${HOST || 'localhost'}:${PORT}`);
 });
 
 const scheduler = startCloseScheduler();
