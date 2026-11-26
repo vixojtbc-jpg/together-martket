@@ -34,4 +34,19 @@ async function updateQuantityAndStatus(conn, id, quantity, status) {
   ]);
 }
 
-module.exports = { findByGroupBuyAndUser, findForUpdate, insert, updateQuantityAndStatus };
+// 공구 취소/실패 시 참여 전부 취소
+async function cancelAllJoined(conn, groupBuyId) {
+  const [result] = await conn.query(
+    "UPDATE participations SET status = 'CANCELED' WHERE group_buy_id = ? AND status = 'JOINED'",
+    [groupBuyId],
+  );
+  return result.affectedRows;
+}
+
+module.exports = {
+  findByGroupBuyAndUser,
+  findForUpdate,
+  insert,
+  updateQuantityAndStatus,
+  cancelAllJoined,
+};

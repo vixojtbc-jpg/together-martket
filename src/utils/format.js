@@ -39,4 +39,32 @@ function formatRemaining(deadline, now = new Date()) {
   return '곧 마감';
 }
 
-module.exports = { MINUTE, HOUR, DAY, formatPrice, formatKST, formatRemaining };
+const KST_OFFSET = 9 * HOUR;
+
+// UTC Date -> <input type="datetime-local"> 값 (한국 시간) "2026-12-01T18:00"
+function toKSTInputValue(date) {
+  return new Date(date.getTime() + KST_OFFSET).toISOString().slice(0, 16);
+}
+
+// "2026-12-01T18:00" (한국 시간) -> UTC Date. 형식이 틀리거나 없는 날짜면 null
+function parseKSTInput(value) {
+  const m = typeof value === 'string' && value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);
+  if (!m) return null;
+  const [y, mo, d, h, mi] = m.slice(1).map(Number);
+  const utc = Date.UTC(y, mo - 1, d, h, mi) - KST_OFFSET;
+  const date = new Date(utc);
+  // 2월 30일처럼 넘어가는 날짜 거부
+  if (toKSTInputValue(date) !== value) return null;
+  return date;
+}
+
+module.exports = {
+  MINUTE,
+  HOUR,
+  DAY,
+  formatPrice,
+  formatKST,
+  formatRemaining,
+  toKSTInputValue,
+  parseKSTInput,
+};

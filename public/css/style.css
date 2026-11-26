@@ -630,6 +630,23 @@ textarea.field__input {
   border-color: var(--color-discount);
 }
 
+.form__preview {
+  display: block;
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+.field__help--block {
+  margin: -8px 0 16px;
+}
+
+.host-edit {
+  margin-top: 8px;
+}
+
 /* 빈 상태 */
 .empty {
   background: var(--color-surface);

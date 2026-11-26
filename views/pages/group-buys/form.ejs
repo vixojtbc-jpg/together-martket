@@ -1,0 +1,92 @@
+<%
+  const isEdit = mode === 'edit';
+  const priceLocked = isEdit && gb.hasParticipants;
+%>
+<section class="form-page form-page--wide">
+  <h1 class="form-page__title"><%= isEdit ? '공구 수정' : '새 공구 열기' %></h1>
+
+  <form method="POST" enctype="multipart/form-data" class="form" novalidate
+        action="<%= isEdit ? `/group-buys/${gb.id}?_method=PUT` : '/group-buys' %>">
+    <% if (formError) { %><p class="alert alert--error"><%= formError %></p><% } %>
+    <% if (Object.keys(errors).length > 0) { %>
+      <p class="alert alert--error">입력 내용을 다시 확인해 주세요.</p>
+    <% } %>
+
+    <div class="field">
+      <label for="title" class="field__label">상품명</label>
+      <input type="text" id="title" name="title" class="field__input" value="<%= values.title %>"
+             required minlength="2" maxlength="100" placeholder="예) 제주 노지 감귤 10kg">
+      <% if (errors.title) { %><p class="field__error"><%= errors.title %></p><% } %>
+    </div>
+
+    <div class="field">
+      <label for="image" class="field__label">상품 이미지 <span class="field__help">(선택 · jpg/png/webp · 5MB 이하)</span></label>
+      <% if (isEdit && gb.image_path) { %>
+        <img src="/uploads/<%= gb.image_path %>" alt="현재 이미지" class="form__preview">
+        <p class="field__help">새 이미지를 올리면 지금 이미지가 바뀌어요.</p>
+      <% } %>
+      <input type="file" id="image" name="image" class="field__input" accept="image/jpeg,image/png,image/webp">
+      <% if (errors.image) { %><p class="field__error"><%= errors.image %></p><% } %>
+    </div>
+
+    <div class="field__row">
+      <div class="field">
+        <label for="originalPrice" class="field__label">정가 (원)</label>
+        <input type="number" id="originalPrice" name="originalPrice" class="field__input" value="<%= values.originalPrice %>"
+               min="100" max="10000000" step="1" inputmode="numeric" required <%= priceLocked ? 'readonly' : '' %>>
+        <% if (errors.originalPrice) { %><p class="field__error"><%= errors.originalPrice %></p><% } %>
+      </div>
+      <div class="field">
+        <label for="salePrice" class="field__label">공구가 (원)</label>
+        <input type="number" id="salePrice" name="salePrice" class="field__input" value="<%= values.salePrice %>"
+               min="100" max="10000000" step="1" inputmode="numeric" required <%= priceLocked ? 'readonly' : '' %>>
+        <% if (errors.salePrice) { %><p class="field__error"><%= errors.salePrice %></p><% } %>
+      </div>
+    </div>
+    <% if (priceLocked) { %>
+      <p class="field__help field__help--block">참여자가 있어서 가격은 바꿀 수 없어요.</p>
+    <% } %>
+
+    <div class="field__row">
+      <div class="field">
+        <label for="targetQuantity" class="field__label">목표 수량</label>
+        <input type="number" id="targetQuantity" name="targetQuantity" class="field__input" value="<%= values.targetQuantity %>"
+               min="1" max="10000" step="1" inputmode="numeric" required>
+        <% if (errors.targetQuantity) { %><p class="field__error"><%= errors.targetQuantity %></p><% } %>
+      </div>
+      <div class="field">
+        <label for="maxQuantity" class="field__label">최대 수량 <span class="field__help">(선택)</span></label>
+        <input type="number" id="maxQuantity" name="maxQuantity" class="field__input" value="<%= values.maxQuantity %>"
+               min="1" max="10000" step="1" inputmode="numeric" placeholder="제한 없음">
+        <% if (errors.maxQuantity) { %><p class="field__error"><%= errors.maxQuantity %></p><% } %>
+      </div>
+    </div>
+    <% if (isEdit && gb.current_quantity > 0) { %>
+      <p class="field__help field__help--block">현재 <%= gb.current_quantity %>개 참여 중이에요. 최대 수량은 이보다 작게 할 수 없어요.</p>
+    <% } %>
+
+    <div class="field">
+      <label for="deadlineAt" class="field__label">마감 일시 <span class="field__help">(한국 시간)</span></label>
+      <input type="datetime-local" id="deadlineAt" name="deadlineAt" class="field__input" value="<%= values.deadlineAt %>"
+             min="<%= deadlineMin %>" required>
+      <% if (errors.deadlineAt) { %><p class="field__error"><%= errors.deadlineAt %></p><% } %>
+    </div>
+
+    <div class="field">
+      <label for="description" class="field__label">상품 설명</label>
+      <textarea id="description" name="description" class="field__input" required minlength="10" maxlength="5000"
+                placeholder="원산지, 구성, 배송 일정 등을 알려 주세요."><%= values.description %></textarea>
+      <% if (errors.description) { %><p class="field__error"><%= errors.description %></p><% } %>
+    </div>
+
+    <button type="submit" class="btn btn--primary btn--block"><%= isEdit ? '수정 완료' : '공구 열기' %></button>
+  </form>
+
+  <% if (isEdit) { %>
+    <form method="POST" action="/group-buys/<%= gb.id %>/cancel" class="cancel-form"
+          data-confirm="공구를 취소할까요? 모든 참여가 함께 취소되고 되돌릴 수 없어요.">
+      <button type="submit" class="btn btn--ghost btn--block">공구 취소하기</button>
+    </form>
+    <p class="form-page__alt"><a href="/group-buys/<%= gb.id %>">← 공구 상세로 돌아가기</a></p>
+  <% } %>
+</section>

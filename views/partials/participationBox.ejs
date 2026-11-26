@@ -12,6 +12,15 @@
   <a href="/login?next=/group-buys/<%= gb.id %>" class="btn btn--primary btn--block">로그인하고 참여하기</a>
 <% } else if (gb.isHost) { %>
   <p class="notice">내가 연 공구예요.</p>
+  <% if (gb.canManage) { %>
+    <a href="/group-buys/<%= gb.id %>/edit" class="btn btn--primary btn--block host-edit">공구 수정하기</a>
+  <% } %>
+<% } else if (gb.canCancelAsAdmin) { %>
+  <p class="notice">관리자 계정이에요.</p>
+  <form method="POST" action="/group-buys/<%= gb.id %>/cancel" class="cancel-form"
+        data-confirm="관리자 권한으로 이 공구를 취소할까요? 모든 참여가 함께 취소돼요.">
+    <button type="submit" class="btn btn--ghost btn--block">공구 강제 취소</button>
+  </form>
 <% } else { %>
   <% if (gb.isSoldOut) { %>
     <p class="notice">모든 수량이 마감되었어요.</p>

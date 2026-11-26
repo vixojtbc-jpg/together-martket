@@ -46,6 +46,8 @@ app.use(
   }),
 );
 app.use(express.static(path.join(ROOT, 'public')));
+// 업로드 이미지 (파일 이름은 서버가 만든 UUID 라서 추측 불가)
+app.use('/uploads', express.static(path.join(ROOT, 'uploads'), { index: false, dotfiles: 'ignore', maxAge: '7d' }));
 app.use(express.urlencoded({ extended: false, limit: '100kb' }));
 // <form method="POST" action="/xxx?_method=DELETE"> 형태로 PUT/DELETE 사용
 app.use(methodOverride('_method'));

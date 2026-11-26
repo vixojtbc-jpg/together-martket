@@ -44,10 +44,65 @@ async function updateQuantityAndStatus(conn, id, currentQuantity, status) {
   ]);
 }
 
+async function findById(id) {
+  const [rows] = await db.query('SELECT * FROM group_buys WHERE id = ?', [id]);
+  return rows[0] || null;
+}
+
+async function create(data) {
+  const [result] = await db.query(
+    `INSERT INTO group_buys
+       (host_id, title, description, image_path, original_price, sale_price,
+        target_quantity, max_quantity, deadline_at, status)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'RECRUITING')`,
+    [
+      data.hostId,
+      data.title,
+      data.description,
+      data.imagePath,
+      data.originalPrice,
+      data.salePrice,
+      data.targetQuantity,
+      data.maxQuantity,
+      data.deadlineAt,
+    ],
+  );
+  return result.insertId;
+}
+
+async function update(conn, id, data) {
+  await conn.query(
+    `UPDATE group_buys
+        SET title = ?, description = ?, image_path = ?, original_price = ?, sale_price = ?,
+            target_quantity = ?, max_quantity = ?, deadline_at = ?, status = ?
+      WHERE id = ?`,
+    [
+      data.title,
+      data.description,
+      data.imagePath,
+      data.originalPrice,
+      data.salePrice,
+      data.targetQuantity,
+      data.maxQuantity,
+      data.deadlineAt,
+      data.status,
+      id,
+    ],
+  );
+}
+
+async function updateStatus(conn, id, status) {
+  await conn.query('UPDATE group_buys SET status = ? WHERE id = ?', [status, id]);
+}
+
 module.exports = {
   OPEN_STATUSES,
   findOpenList,
   findDetailById,
+  findById,
   findByIdForUpdate,
+  create,
+  update,
+  updateStatus,
   updateQuantityAndStatus,
 };

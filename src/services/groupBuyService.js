@@ -80,6 +80,7 @@ async function getDetail(id, user = null, now = new Date()) {
     if (mine && mine.status === 'JOINED') myQuantity = mine.quantity;
   }
   const isHost = Boolean(user) && user.id === row.host_id;
+  const canManage = isHost && user.role === 'HOST';
 
   // 이번에 더 참여할 수 있는 최대 수량
   const joinableMax = Math.min(
@@ -99,6 +100,8 @@ async function getDetail(id, user = null, now = new Date()) {
     isSoldOut: remainingCapacity === 0,
     remainingToTarget: Math.max(row.target_quantity - row.current_quantity, 0),
     isHost,
+    canManage,
+    canCancelAsAdmin: Boolean(user) && user.role === 'ADMIN',
     myQuantity,
     myTotalText: formatPrice(row.sale_price * myQuantity),
     joinableMax: Math.max(joinableMax, 0),
@@ -164,12 +167,84 @@ async function cancelParticipation(userId, groupBuyId, now = new Date()) {
   });
 }
 
+// ───────── 공구장: 등록 / 수정 / 취소 ─────────
+
+// 수정·취소 권한: 본인 공구의 공구장 (취소는 관리자도 가능)
+function assertCanManage(user, gb, { allowAdmin = false } = {}) {
+  const isOwner = user.role === 'HOST' && gb.host_id === user.id;
+  const isAdmin = allowAdmin && user.role === 'ADMIN';
+  if (!isOwner && !isAdmin) throw new AppError(403, '내가 연 공구만 관리할 수 있어요.');
+}
+
+// data: 컨트롤러에서 검증을 마친 값 (imagePath 포함)
+async function createGroupBuy(hostId, data) {
+  return groupBuyRepository.create({ ...data, hostId });
+}
+
+// 수정 화면용
+async function getForEdit(user, id, now = new Date()) {
+  const gb = await groupBuyRepository.findById(id);
+  if (!gb) throw new AppError(404, '공구를 찾을 수 없어요.');
+  assertCanManage(user, gb);
+  if (!isOpen(gb, now)) throw new AppError(409, '마감되었거나 취소된 공구는 수정할 수 없어요.');
+  return { ...gb, hasParticipants: gb.current_quantity > 0 };
+}
+
+// 공구 수정. 참여자가 있으면 가격은 바꿀 수 없고, 최대 수량은 현재 참여 수량 이상이어야 한다.
+// 반환: { oldImagePath } — 이미지가 바뀌었으면 이전 파일 이름 (호출한 쪽에서 삭제)
+async function updateGroupBuy(user, id, data, now = new Date()) {
+  return withTransaction(async (conn) => {
+    const gb = await groupBuyRepository.findByIdForUpdate(conn, id);
+    if (!gb) throw new AppError(404, '공구를 찾을 수 없어요.');
+    assertCanManage(user, gb);
+    if (!isOpen(gb, now)) throw new AppError(409, '마감되었거나 취소된 공구는 수정할 수 없어요.');
+
+    const hasParticipants = gb.current_quantity > 0;
+    if (
+      hasParticipants &&
+      (data.originalPrice !== gb.original_price || data.salePrice !== gb.sale_price)
+    ) {
+      throw new AppError(409, '참여자가 있는 공구는 가격을 바꿀 수 없어요.');
+    }
+    if (data.maxQuantity !== null && data.maxQuantity < gb.current_quantity) {
+      throw new AppError(409, `최대 수량은 현재 참여 수량(${gb.current_quantity}개) 이상이어야 해요.`);
+    }
+
+    await groupBuyRepository.update(conn, id, {
+      ...data,
+      imagePath: data.imagePath === undefined ? gb.image_path : data.imagePath,
+      status: statusByQuantity(gb.current_quantity, data.targetQuantity),
+    });
+
+    const imageChanged = data.imagePath !== undefined && data.imagePath !== gb.image_path;
+    return { oldImagePath: imageChanged ? gb.image_path : null };
+  });
+}
+
+// 공구 취소 (공구장 본인 또는 관리자). 참여는 전부 취소된다.
+async function cancelGroupBuy(user, id, now = new Date()) {
+  return withTransaction(async (conn) => {
+    const gb = await groupBuyRepository.findByIdForUpdate(conn, id);
+    if (!gb) throw new AppError(404, '공구를 찾을 수 없어요.');
+    assertCanManage(user, gb, { allowAdmin: true });
+    if (!isOpen(gb, now)) throw new AppError(409, '이미 마감되었거나 취소된 공구예요.');
+
+    await groupBuyRepository.updateStatus(conn, id, 'CANCELED');
+    const canceledCount = await participationRepository.cancelAllJoined(conn, id);
+    return { canceledCount };
+  });
+}
+
 module.exports = {
   PER_USER_MAX,
   getOpenGroupBuys,
   getDetail,
   join,
   cancelParticipation,
+  createGroupBuy,
+  getForEdit,
+  updateGroupBuy,
+  cancelGroupBuy,
   isOpen,
   calcDiscountRate,
   calcProgress,
