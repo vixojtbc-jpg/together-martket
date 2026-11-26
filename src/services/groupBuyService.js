@@ -235,8 +235,47 @@ async function cancelGroupBuy(user, id, now = new Date()) {
   });
 }
 
+// ───────── 자동 마감 ─────────
+
+// 공구 하나를 마감 처리: 목표 달성 → CLOSED, 미달 → FAILED (참여 전부 자동 취소)
+// 이미 처리됐거나 마감 전이면 null
+async function closeOne(id, now = new Date()) {
+  return withTransaction(async (conn) => {
+    const gb = await groupBuyRepository.findByIdForUpdate(conn, id);
+    if (!gb || !groupBuyRepository.OPEN_STATUSES.includes(gb.status)) return null;
+    if (gb.deadline_at.getTime() > now.getTime()) return null;
+
+    if (gb.current_quantity >= gb.target_quantity) {
+      await groupBuyRepository.updateStatus(conn, id, 'CLOSED');
+      return { id, status: 'CLOSED' };
+    }
+    await groupBuyRepository.updateStatus(conn, id, 'FAILED');
+    const canceledCount = await participationRepository.cancelAllJoined(conn, id);
+    return { id, status: 'FAILED', canceledCount };
+  });
+}
+
+// 마감 시각이 지난 공구를 모두 처리. 하나가 실패해도 나머지는 계속 처리한다.
+async function closeExpired(now = new Date()) {
+  const ids = await groupBuyRepository.findExpiredOpenIds();
+  const summary = { closed: [], failed: [], errors: 0 };
+  for (const id of ids) {
+    try {
+      const result = await closeOne(id, now);
+      if (result && result.status === 'CLOSED') summary.closed.push(id);
+      if (result && result.status === 'FAILED') summary.failed.push(id);
+    } catch (err) {
+      summary.errors += 1;
+      console.error(`[자동 마감] 공구 #${id} 처리 실패`, err);
+    }
+  }
+  return summary;
+}
+
 module.exports = {
   PER_USER_MAX,
+  closeOne,
+  closeExpired,
   getOpenGroupBuys,
   getDetail,
   join,

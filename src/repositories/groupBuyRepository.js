@@ -59,6 +59,18 @@ async function findByHost(hostId) {
   return rows;
 }
 
+// 자동 마감 대상: 마감 시각이 지났는데 아직 모집 중/목표 달성 상태인 공구
+async function findExpiredOpenIds(limit = 100) {
+  const [rows] = await db.query(
+    `SELECT id FROM group_buys
+      WHERE status IN (?) AND deadline_at <= UTC_TIMESTAMP()
+      ORDER BY deadline_at ASC
+      LIMIT ?`,
+    [OPEN_STATUSES, limit],
+  );
+  return rows.map((row) => row.id);
+}
+
 async function findById(id) {
   const [rows] = await db.query('SELECT * FROM group_buys WHERE id = ?', [id]);
   return rows[0] || null;
@@ -115,6 +127,7 @@ module.exports = {
   findOpenList,
   findDetailById,
   findByHost,
+  findExpiredOpenIds,
   findById,
   findByIdForUpdate,
   create,
